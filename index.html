@@ -163,7 +163,7 @@
       <div class="row">
         <div>
           <label>ขนาดแบตเตอรี่ (kWh)</label>
-          <input type="number" id="in-batt-size" value="64.5" min="0" step="0.1">
+          <input type="number" id="in-batt-size" value="64.5" min="0" step="0.1" onchange="saveSettingsLocal()">
         </div>
         <div>
           <label>% ก่อนชาร์จ</label>
@@ -177,11 +177,11 @@
       <div class="row">
         <div>
           <label>Loss จากการชาร์จ (%) — ปกติ 8–12%</label>
-          <input type="number" id="in-batt-loss" value="10" min="0" max="40" step="1">
+          <input type="number" id="in-batt-loss" value="10" min="0" max="40" step="1" onchange="saveSettingsLocal()">
         </div>
         <div>
           <label>กำลังชาร์จจริง (kW) — ใช้ประมาณเวลาชาร์จ</label>
-          <input type="number" id="in-batt-kw" value="6.6" min="0" step="0.1">
+          <input type="number" id="in-batt-kw" value="6.6" min="0" step="0.1" onchange="saveSettingsLocal()">
         </div>
       </div>
     </div>
@@ -206,21 +206,21 @@
       💡 คิดที่ <b style="color:var(--accent)">เรตขั้นสูงสุด 4.4217 บาท/หน่วย</b> เพราะบ้านใช้ไฟ ~400 หน่วย/เดือนอยู่แล้ว หน่วยของรถจึงตกขั้นแพงสุดทั้งหมด — รวม Ft + VAT ประมาณ <b style="color:var(--accent)" id="allin-preview">4.90</b> บาท/หน่วย
     </div>
     <label>จำนวนครั้งที่ชาร์จต่อเดือน (ใช้ประมาณค่าไฟรายเดือน)</label>
-    <input type="number" id="in-freq" value="8" min="1" step="1">
+    <input type="number" id="in-freq" value="8" min="1" step="1" onchange="saveSettingsLocal()">
     <details style="margin-top:12px;">
       <summary>⚙️ ตั้งค่าอัตราค่าไฟ (เรต / Ft / VAT) — งวด พ.ค.–ส.ค. 2569</summary>
       <div class="row">
         <div>
           <label>เรตค่าพลังงานขั้นสูงสุด (บาท/หน่วย)</label>
-          <input type="number" id="in-rate" value="4.4217" step="0.0001" oninput="updatePreview()">
+          <input type="number" id="in-rate" value="4.4217" step="0.0001" oninput="updatePreview();saveSettingsLocal()">
         </div>
         <div>
           <label>ค่า Ft (บาท/หน่วย)</label>
-          <input type="number" id="in-ft" value="0.1623" step="0.0001" oninput="updatePreview()">
+          <input type="number" id="in-ft" value="0.1623" step="0.0001" oninput="updatePreview();saveSettingsLocal()">
         </div>
         <div>
           <label>VAT (%)</label>
-          <input type="number" id="in-vat" value="7" step="0.1" oninput="updatePreview()">
+          <input type="number" id="in-vat" value="7" step="0.1" oninput="updatePreview();saveSettingsLocal()">
         </div>
       </div>
       <div class="note">
@@ -285,7 +285,33 @@
       <button class="btn2" onclick="exportCSV()">⬇ ดาวน์โหลด CSV</button>
       <button class="btn2" onclick="clearLog()">🗑 ล้างรายการ</button>
     </div>
-    <div class="note">⚠️ รายการเก็บไว้ชั่วคราวในหน้านี้เท่านั้น ถ้ารีเฟรชหน้าจะหายไป — กดดาวน์โหลด CSV เพื่อเก็บถาวร</div>
+    <div class="note">✅ ข้อมูลถูกจดจำอัตโนมัติในเบราว์เซอร์นี้แล้ว (รีเฟรช/ปิดแอปแล้วไม่หาย) — กดดาวน์โหลด CSV หรือสำรองขึ้น Google Drive ด้านล่างเพื่อกู้คืนบนเครื่องอื่นได้</div>
+  </div>
+
+  <!-- ===== สำรองข้อมูลขึ้น Google Drive ===== -->
+  <div class="card">
+    <h2>☁️ สำรองข้อมูลขึ้น Google Drive</h2>
+    <div class="note" style="margin:0 0 12px; padding:9px 12px; background:var(--card2); border-radius:9px; border:1px solid var(--line);">
+      แอปจดจำข้อมูลในเบราว์เซอร์นี้ให้อัตโนมัติอยู่แล้ว ส่วนนี้ใช้เมื่อต้องการสำรอง/กู้คืนข้อมูลข้ามเครื่องหรือเบราว์เซอร์ผ่านบัญชี Google Drive ของคุณเอง (ทำครั้งแรกครั้งเดียว)
+    </div>
+    <details id="drive-setup">
+      <summary>⚙️ ตั้งค่าการเชื่อมต่อ Google Drive</summary>
+      <label>Google OAuth Client ID ของคุณเอง</label>
+      <input type="text" id="in-gclient" placeholder="xxxxxxxxxxxx.apps.googleusercontent.com" onchange="localStorage.setItem('ev_gclient_id', this.value.trim())">
+      <div class="note">
+        ต้องสร้าง Client ID ของตัวเองฟรีที่ Google Cloud Console แล้วนำมาวางที่นี่ (ทำครั้งเดียว) — ดูขั้นตอนละเอียดใน README หัวข้อ "สำรองข้อมูลขึ้น Google Drive" เนื่องจากต้องผูกกับบัญชี Google ของคุณเอง จึงสร้างแทนให้ไม่ได้
+      </div>
+    </details>
+    <div class="hist-actions" style="margin-top:12px;">
+      <button class="btn2" id="btn-drive-connect" onclick="connectDrive()">🔗 เชื่อมต่อ Google Drive</button>
+      <button class="btn2" id="btn-drive-save" onclick="saveToDrive()" disabled>☁️⬆ บันทึกขึ้น Drive</button>
+      <button class="btn2" id="btn-drive-load" onclick="loadFromDrive()" disabled>☁️⬇ โหลดจาก Drive</button>
+    </div>
+    <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
+      <input type="checkbox" id="in-gautosync" style="width:auto;" onchange="toggleAutoSync()">
+      <span style="color:var(--text); font-size:.85rem;">ซิงค์ขึ้น Drive อัตโนมัติทุกครั้งที่บันทึก/ลบรายการ (ต้องเชื่อมต่อก่อน)</span>
+    </label>
+    <div class="note" id="drive-status" style="margin-top:10px;">สถานะ: ยังไม่ได้เชื่อมต่อ</div>
   </div>
 
   <div class="sub" style="margin-top:6px;">
@@ -318,8 +344,48 @@ const T12 = {
   ]
 };
 
+// ================== จดจำข้อมูลอัตโนมัติ (localStorage) ==================
+const LOG_STORAGE_KEY='ev_charge_log_v1';
+const SETTINGS_STORAGE_KEY='ev_settings_v1';
+const SETTINGS_FIELD_IDS=['in-rate','in-ft','in-vat','in-freq','in-batt-size','in-batt-loss','in-batt-kw'];
+
+function saveLogLocal(){
+  try{
+    localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(log.map(r=>({...r, date:r.date.toISOString()}))));
+  }catch(e){ /* เก็บไม่ได้ (เช่น โหมดส่วนตัว) ก็ปล่อยผ่าน */ }
+  maybeAutoSync();
+}
+function loadLogLocal(){
+  try{
+    const raw=localStorage.getItem(LOG_STORAGE_KEY);
+    if(!raw) return [];
+    return JSON.parse(raw).map(r=>({...r, date:new Date(r.date)}));
+  }catch(e){ return []; }
+}
+function collectSettings(){
+  const s={mode};
+  SETTINGS_FIELD_IDS.forEach(id=>{ const el=document.getElementById(id); if(el) s[id]=el.value; });
+  return s;
+}
+function applySettings(s){
+  if(!s) return;
+  SETTINGS_FIELD_IDS.forEach(id=>{ if(s[id]!==undefined){ const el=document.getElementById(id); if(el) el.value=s[id]; } });
+  if(s.mode) setMode(s.mode);
+  updatePreview();
+}
+function saveSettingsLocal(){
+  try{ localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(collectSettings())); }catch(e){}
+}
+function loadSettingsLocal(){
+  try{
+    const raw=localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if(!raw) return;
+    applySettings(JSON.parse(raw));
+  }catch(e){}
+}
+
 let mode = 'batt';
-let log = [];
+let log = loadLogLocal();
 let lastResult = null;
 
 // อ่านวันที่ที่ผู้ใช้เลือก (ใช้วันที่นั้นผสมกับเวลาปัจจุบัน) ถ้าไม่ได้เลือกใช้วันเวลาปัจจุบัน
@@ -345,6 +411,7 @@ function setMode(m){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.mode===m));
   document.querySelectorAll('.mode').forEach(d=>d.classList.remove('active'));
   document.getElementById('mode-'+m).classList.add('active');
+  saveSettingsLocal();
 }
 
 function num(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v)?0:v; }
@@ -455,6 +522,7 @@ function calc(){
 function addToLog(){
   if(!lastResult) return;
   log.push({...lastResult});
+  saveLogLocal();
   renderLog();
 }
 let view='session';
@@ -463,7 +531,7 @@ function setView(v){
   document.querySelectorAll('[data-view]').forEach(t=>t.classList.toggle('active', t.dataset.view===v));
   renderLog();
 }
-function delLog(i){ log.splice(i,1); renderLog(); }
+function delLog(i){ log.splice(i,1); saveLogLocal(); renderLog(); }
 
 // จัดกลุ่มรายเดือน
 function groupByMonth(){
@@ -567,7 +635,7 @@ function drawChart(labels, costs, kwhs, title){
   });
 }
 window.addEventListener('resize', ()=>{ if(log.length) renderLog(); });
-function clearLog(){ if(log.length && confirm('ล้างรายการทั้งหมด?')){ log=[]; renderLog(); } }
+function clearLog(){ if(log.length && confirm('ล้างรายการทั้งหมด?')){ log=[]; saveLogLocal(); renderLog(); } }
 function exportCSV(){
   if(log.length===0){ alert('ยังไม่มีรายการ'); return; }
   let csv='﻿วันที่,เวลา,kWh,บาทต่อหน่วย,ค่าไฟ(บาท)\n';
@@ -579,6 +647,178 @@ function exportCSV(){
   a.download='ev_charge_log.csv';
   a.click();
 }
+
+// ================== สำรองข้อมูลขึ้น Google Drive ==================
+const DRIVE_FILE_NAME='ev_charge_data.json';
+const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.file'; // สิทธิ์จำกัด: เข้าถึงได้เฉพาะไฟล์ที่แอปนี้สร้างเอง ไม่เห็นไฟล์อื่นใน Drive
+let gTokenClient=null;
+let gAccessToken=null;
+let gTokenExpiry=0;
+
+function setDriveStatus(msg){ const el=document.getElementById('drive-status'); if(el) el.textContent='สถานะ: '+msg; }
+
+function loadGIS(){
+  return new Promise((resolve,reject)=>{
+    if(window.google && google.accounts && google.accounts.oauth2){ resolve(); return; }
+    const s=document.createElement('script');
+    s.src='https://accounts.google.com/gsi/client';
+    s.async=true; s.defer=true;
+    s.onload=()=>resolve();
+    s.onerror=()=>reject(new Error('โหลดสคริปต์ Google ไม่สำเร็จ (ต้องมีอินเทอร์เน็ต)'));
+    document.head.appendChild(s);
+  });
+}
+
+async function connectDrive(){
+  const clientId=document.getElementById('in-gclient').value.trim();
+  if(!clientId){
+    alert('กรุณากรอก Google OAuth Client ID ก่อน (ดูวิธีสร้างใน README หัวข้อ "สำรองข้อมูลขึ้น Google Drive")');
+    const d=document.getElementById('drive-setup'); if(d) d.open=true;
+    return;
+  }
+  localStorage.setItem('ev_gclient_id', clientId);
+  setDriveStatus('กำลังเชื่อมต่อ...');
+  try{
+    await loadGIS();
+    gTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: DRIVE_SCOPE,
+      callback: (resp)=>{
+        if(resp.error){ setDriveStatus('เชื่อมต่อไม่สำเร็จ: '+resp.error); return; }
+        gAccessToken = resp.access_token;
+        gTokenExpiry = Date.now() + (resp.expires_in||3600)*1000 - 60000;
+        document.getElementById('btn-drive-save').disabled=false;
+        document.getElementById('btn-drive-load').disabled=false;
+        setDriveStatus('เชื่อมต่อสำเร็จ ✓ พร้อมบันทึก/โหลดข้อมูล');
+      },
+    });
+    gTokenClient.requestAccessToken({prompt:'consent'});
+  }catch(e){
+    setDriveStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);
+  }
+}
+
+function ensureToken(){
+  if(gAccessToken && Date.now()<gTokenExpiry) return Promise.resolve(gAccessToken);
+  return new Promise((resolve,reject)=>{
+    if(!gTokenClient){ reject(new Error('ยังไม่ได้เชื่อมต่อ Google Drive — กดปุ่ม "เชื่อมต่อ Google Drive" ก่อน')); return; }
+    gTokenClient.callback=(resp)=>{
+      if(resp.error){ reject(new Error(resp.error)); return; }
+      gAccessToken=resp.access_token;
+      gTokenExpiry=Date.now()+(resp.expires_in||3600)*1000-60000;
+      resolve(gAccessToken);
+    };
+    gTokenClient.requestAccessToken({prompt:''});
+  });
+}
+
+async function driveFindFileId(token){
+  let fileId=localStorage.getItem('ev_gdrive_file_id');
+  if(fileId) return fileId;
+  const q=encodeURIComponent("name='"+DRIVE_FILE_NAME+"' and trashed=false");
+  const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=drive&fields=files(id,name)', {
+    headers:{Authorization:'Bearer '+token}
+  });
+  if(!res.ok) throw new Error('ค้นหาไฟล์ใน Drive ไม่สำเร็จ (HTTP '+res.status+')');
+  const data=await res.json();
+  if(data.files && data.files.length){
+    fileId=data.files[0].id;
+    localStorage.setItem('ev_gdrive_file_id', fileId);
+    return fileId;
+  }
+  return null;
+}
+
+async function saveToDrive(){
+  try{
+    setDriveStatus('กำลังบันทึกขึ้น Drive...');
+    const token=await ensureToken();
+    const payload=JSON.stringify({
+      version:1,
+      savedAt:new Date().toISOString(),
+      log: log.map(r=>({...r, date:r.date.toISOString()})),
+      settings: collectSettings(),
+    }, null, 2);
+    let fileId=await driveFindFileId(token);
+    if(fileId){
+      const res=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+fileId+'?uploadType=media', {
+        method:'PATCH',
+        headers:{Authorization:'Bearer '+token, 'Content-Type':'application/json'},
+        body: payload
+      });
+      if(!res.ok) throw new Error('อัปเดตไฟล์ไม่สำเร็จ (HTTP '+res.status+')');
+    } else {
+      const boundary='evcalcboundary';
+      const metadata={name:DRIVE_FILE_NAME, mimeType:'application/json'};
+      const body=
+        '--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n'+
+        '--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+payload+'\r\n'+
+        '--'+boundary+'--';
+      const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method:'POST',
+        headers:{Authorization:'Bearer '+token, 'Content-Type':'multipart/related; boundary='+boundary},
+        body
+      });
+      if(!res.ok) throw new Error('สร้างไฟล์ไม่สำเร็จ (HTTP '+res.status+')');
+      const data=await res.json();
+      if(data.id) localStorage.setItem('ev_gdrive_file_id', data.id);
+    }
+    setDriveStatus('บันทึกขึ้น Drive สำเร็จ ✓ ('+new Date().toLocaleTimeString('th-TH')+')');
+  }catch(e){
+    setDriveStatus('บันทึกไม่สำเร็จ: '+e.message);
+  }
+}
+
+async function loadFromDrive(){
+  try{
+    setDriveStatus('กำลังโหลดจาก Drive...');
+    const token=await ensureToken();
+    const fileId=await driveFindFileId(token);
+    if(!fileId){ setDriveStatus('ยังไม่มีข้อมูลสำรองใน Drive (ลองกด "บันทึกขึ้น Drive" ก่อน)'); return; }
+    const res=await fetch('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media', {
+      headers:{Authorization:'Bearer '+token}
+    });
+    if(!res.ok) throw new Error('โหลดไฟล์ไม่สำเร็จ (HTTP '+res.status+')');
+    const data=await res.json();
+    const n=(data.log||[]).length;
+    const savedAt=data.savedAt ? new Date(data.savedAt).toLocaleString('th-TH') : '-';
+    if(!confirm('พบข้อมูลสำรอง '+n+' รายการ (บันทึกล่าสุด '+savedAt+')\nต้องการแทนที่ข้อมูลในเครื่องนี้หรือไม่?')) { setDriveStatus('ยกเลิกการโหลด'); return; }
+    log=(data.log||[]).map(r=>({...r, date:new Date(r.date)}));
+    saveLogLocal();
+    if(data.settings) applySettings(data.settings);
+    renderLog();
+    setDriveStatus('โหลดจาก Drive สำเร็จ ✓');
+  }catch(e){
+    setDriveStatus('โหลดไม่สำเร็จ: '+e.message);
+  }
+}
+
+let autoSyncTimer=null;
+function maybeAutoSync(){
+  if(localStorage.getItem('ev_gautosync')==='1' && gTokenClient){
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer=setTimeout(()=>{ saveToDrive(); }, 1500);
+  }
+}
+function toggleAutoSync(){
+  const on=document.getElementById('in-gautosync').checked;
+  if(on && !gTokenClient){
+    alert('กรุณาเชื่อมต่อ Google Drive ก่อนเปิดใช้การซิงค์อัตโนมัติ');
+    document.getElementById('in-gautosync').checked=false;
+    return;
+  }
+  localStorage.setItem('ev_gautosync', on?'1':'0');
+}
+
+// ================== เริ่มต้นแอป: โหลดค่าที่จดจำไว้ ==================
+(function initPersistence(){
+  loadSettingsLocal();
+  const savedClient=localStorage.getItem('ev_gclient_id');
+  if(savedClient){ const el=document.getElementById('in-gclient'); if(el) el.value=savedClient; }
+  const autosyncEl=document.getElementById('in-gautosync');
+  if(autosyncEl) autosyncEl.checked = localStorage.getItem('ev_gautosync')==='1';
+  renderLog();
+})();
 
 // ลงทะเบียน Service Worker เพื่อให้ติดตั้งเป็นแอปและใช้งานออฟไลน์ได้ (ทำงานเมื่อเปิดผ่าน https:// หรือ localhost เท่านั้น)
 if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){

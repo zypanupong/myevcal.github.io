@@ -1,5 +1,5 @@
 // Service worker: cache-first เพื่อให้แอปเปิดใช้งานได้แม้ไม่มีอินเทอร์เน็ต
-const CACHE_NAME = "ev-charge-calc-v1";
+const CACHE_NAME = "ev-charge-calc-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -27,6 +27,9 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // ปล่อย request ไปยังโดเมนอื่น (เช่น Google Sign-In / Drive API) ให้วิ่งตรงไปเน็ตเวิร์กเสมอ ไม่ผ่าน cache
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const network = fetch(event.request)
