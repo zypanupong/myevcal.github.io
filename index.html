@@ -288,28 +288,28 @@
     <div class="note">✅ ข้อมูลถูกจดจำอัตโนมัติในเบราว์เซอร์นี้แล้ว (รีเฟรช/ปิดแอปแล้วไม่หาย) — กดดาวน์โหลด CSV หรือสำรองขึ้น Google Drive ด้านล่างเพื่อกู้คืนบนเครื่องอื่นได้</div>
   </div>
 
-  <!-- ===== สำรองข้อมูลขึ้น Google Drive ===== -->
+  <!-- ===== บันทึกข้อมูลเป็น Google Doc ===== -->
   <div class="card">
-    <h2>☁️ สำรองข้อมูลขึ้น Google Drive</h2>
+    <h2>📄 บันทึกข้อมูลเป็น Google Doc</h2>
     <div class="note" style="margin:0 0 12px; padding:9px 12px; background:var(--card2); border-radius:9px; border:1px solid var(--line);">
-      แอปจดจำข้อมูลในเบราว์เซอร์นี้ให้อัตโนมัติอยู่แล้ว ส่วนนี้ใช้เมื่อต้องการสำรอง/กู้คืนข้อมูลข้ามเครื่องหรือเบราว์เซอร์ผ่านบัญชี Google Drive ของคุณเอง (ทำครั้งแรกครั้งเดียว)
+      แอปจดจำข้อมูลในเบราว์เซอร์นี้ให้อัตโนมัติอยู่แล้ว ส่วนนี้ใช้เมื่อต้องการให้ข้อมูลที่กรอก/บันทึกไว้ ถูกจัดเป็นเอกสาร Google Doc สวยๆ อ่านง่าย อยู่ใน Google Drive ของคุณเอง (ทำครั้งแรกครั้งเดียว)
     </div>
     <details id="drive-setup">
       <summary>⚙️ ตั้งค่าการเชื่อมต่อ Google Drive</summary>
       <label>Google OAuth Client ID ของคุณเอง</label>
       <input type="text" id="in-gclient" placeholder="xxxxxxxxxxxx.apps.googleusercontent.com" onchange="localStorage.setItem('ev_gclient_id', this.value.trim())">
       <div class="note">
-        ต้องสร้าง Client ID ของตัวเองฟรีที่ Google Cloud Console แล้วนำมาวางที่นี่ (ทำครั้งเดียว) — ดูขั้นตอนละเอียดใน README หัวข้อ "สำรองข้อมูลขึ้น Google Drive" เนื่องจากต้องผูกกับบัญชี Google ของคุณเอง จึงสร้างแทนให้ไม่ได้
+        ต้องสร้าง Client ID ของตัวเองฟรีที่ Google Cloud Console แล้วนำมาวางที่นี่ (ทำครั้งเดียว) — ดูขั้นตอนละเอียดใน README หัวข้อ "บันทึกข้อมูลเป็น Google Doc" เนื่องจากต้องผูกกับบัญชี Google ของคุณเอง จึงสร้างแทนให้ไม่ได้
       </div>
     </details>
     <div class="hist-actions" style="margin-top:12px;">
       <button class="btn2" id="btn-drive-connect" onclick="connectDrive()">🔗 เชื่อมต่อ Google Drive</button>
-      <button class="btn2" id="btn-drive-save" onclick="saveToDrive()" disabled>☁️⬆ บันทึกขึ้น Drive</button>
-      <button class="btn2" id="btn-drive-load" onclick="loadFromDrive()" disabled>☁️⬇ โหลดจาก Drive</button>
+      <button class="btn2" id="btn-drive-save" onclick="saveToGoogleDoc()" disabled>📄 บันทึก/อัปเดต Google Doc</button>
+      <a id="btn-drive-open" href="#" target="_blank" rel="noopener" class="btn2" style="display:none; text-decoration:none;">↗ เปิดเอกสาร</a>
     </div>
     <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
       <input type="checkbox" id="in-gautosync" style="width:auto;" onchange="toggleAutoSync()">
-      <span style="color:var(--text); font-size:.85rem;">ซิงค์ขึ้น Drive อัตโนมัติทุกครั้งที่บันทึก/ลบรายการ (ต้องเชื่อมต่อก่อน)</span>
+      <span style="color:var(--text); font-size:.85rem;">อัปเดต Google Doc อัตโนมัติทุกครั้งที่บันทึก/ลบรายการ (ต้องเชื่อมต่อก่อน)</span>
     </label>
     <div class="note" id="drive-status" style="margin-top:10px;">สถานะ: ยังไม่ได้เชื่อมต่อ</div>
   </div>
@@ -648,8 +648,8 @@ function exportCSV(){
   a.click();
 }
 
-// ================== สำรองข้อมูลขึ้น Google Drive ==================
-const DRIVE_FILE_NAME='ev_charge_data.json';
+// ================== บันทึกข้อมูลเป็น Google Doc ==================
+const GDOC_FILE_NAME='สรุปค่าไฟชาร์จรถ EV';
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.file'; // สิทธิ์จำกัด: เข้าถึงได้เฉพาะไฟล์ที่แอปนี้สร้างเอง ไม่เห็นไฟล์อื่นใน Drive
 let gTokenClient=null;
 let gAccessToken=null;
@@ -672,7 +672,7 @@ function loadGIS(){
 async function connectDrive(){
   const clientId=document.getElementById('in-gclient').value.trim();
   if(!clientId){
-    alert('กรุณากรอก Google OAuth Client ID ก่อน (ดูวิธีสร้างใน README หัวข้อ "สำรองข้อมูลขึ้น Google Drive")');
+    alert('กรุณากรอก Google OAuth Client ID ก่อน (ดูวิธีสร้างใน README หัวข้อ "บันทึกข้อมูลเป็น Google Doc")');
     const d=document.getElementById('drive-setup'); if(d) d.open=true;
     return;
   }
@@ -688,8 +688,7 @@ async function connectDrive(){
         gAccessToken = resp.access_token;
         gTokenExpiry = Date.now() + (resp.expires_in||3600)*1000 - 60000;
         document.getElementById('btn-drive-save').disabled=false;
-        document.getElementById('btn-drive-load').disabled=false;
-        setDriveStatus('เชื่อมต่อสำเร็จ ✓ พร้อมบันทึก/โหลดข้อมูล');
+        setDriveStatus('เชื่อมต่อสำเร็จ ✓ พร้อมบันทึกลง Google Doc');
       },
     });
     gTokenClient.requestAccessToken({prompt:'consent'});
@@ -712,84 +711,108 @@ function ensureToken(){
   });
 }
 
-async function driveFindFileId(token){
-  let fileId=localStorage.getItem('ev_gdrive_file_id');
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// สร้างเนื้อหา HTML ของเอกสารสรุป — Drive จะแปลงเป็นฟอร์แมต Google Docs ให้อัตโนมัติเมื่ออัปโหลด
+function buildLogHtml(){
+  const totKwh=log.reduce((s,r)=>s+r.kwh,0);
+  const totCost=log.reduce((s,r)=>s+r.cost,0);
+  let html='<html><head><meta charset="UTF-8"></head><body>';
+  html+='<h1>⚡ สรุปค่าไฟชาร์จรถ EV — AION V 500 Premium</h1>';
+  html+='<p>อัปเดตล่าสุด: '+escHtml(new Date().toLocaleString('th-TH'))+'</p>';
+  if(log.length===0){
+    html+='<p>ยังไม่มีรายการบันทึกการชาร์จ</p>';
+  } else {
+    html+='<h2>สรุปรวม</h2>';
+    html+='<p>จำนวนครั้งที่ชาร์จ: '+log.length+' ครั้ง<br>';
+    html+='หน่วยไฟรวม: '+fmt(totKwh)+' kWh<br>';
+    html+='ค่าไฟรวม: '+fmt(totCost)+' บาท<br>';
+    html+='เฉลี่ย: '+fmt(totKwh>0?totCost/totKwh:0)+' บาท/หน่วย</p>';
+
+    html+='<h2>รายการชาร์จ (รายครั้ง)</h2>';
+    html+='<table border="1" cellpadding="6" cellspacing="0"><tr><th>วันที่</th><th>เวลา</th><th>kWh</th><th>บาท/หน่วย</th><th>ค่าไฟ (บาท)</th></tr>';
+    log.forEach(r=>{
+      html+='<tr><td>'+escHtml(r.date.toLocaleDateString('th-TH'))+'</td><td>'+escHtml(r.date.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}))+'</td>'+
+        '<td>'+fmt(r.kwh)+'</td><td>'+fmt(r.avg)+'</td><td>'+fmt(r.cost)+'</td></tr>';
+    });
+    html+='</table>';
+
+    const g=groupByMonth();
+    html+='<h2>สรุปรายเดือน</h2>';
+    html+='<table border="1" cellpadding="6" cellspacing="0"><tr><th>เดือน</th><th>จำนวนครั้ง</th><th>kWh รวม</th><th>บาท/หน่วยเฉลี่ย</th><th>ค่าไฟรวม (บาท)</th></tr>';
+    g.forEach(m=>{
+      html+='<tr><td>'+escHtml(m.label)+'</td><td>'+m.n+'</td><td>'+fmt(m.kwh)+'</td><td>'+fmt(m.cost/m.kwh)+'</td><td>'+fmt(m.cost)+'</td></tr>';
+    });
+    html+='</table>';
+  }
+  html+='<p style="color:#888; font-size:.85em;">สร้างโดยแอปคำนวณค่าไฟชาร์จรถ EV ที่บ้าน</p>';
+  html+='</body></html>';
+  return html;
+}
+
+async function driveFindDocId(token){
+  let fileId=localStorage.getItem('ev_gdoc_file_id');
   if(fileId) return fileId;
-  const q=encodeURIComponent("name='"+DRIVE_FILE_NAME+"' and trashed=false");
+  const q=encodeURIComponent("name='"+GDOC_FILE_NAME+"' and mimeType='application/vnd.google-apps.document' and trashed=false");
   const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=drive&fields=files(id,name)', {
     headers:{Authorization:'Bearer '+token}
   });
-  if(!res.ok) throw new Error('ค้นหาไฟล์ใน Drive ไม่สำเร็จ (HTTP '+res.status+')');
+  if(!res.ok) throw new Error('ค้นหาเอกสารใน Drive ไม่สำเร็จ (HTTP '+res.status+')');
   const data=await res.json();
   if(data.files && data.files.length){
     fileId=data.files[0].id;
-    localStorage.setItem('ev_gdrive_file_id', fileId);
+    localStorage.setItem('ev_gdoc_file_id', fileId);
     return fileId;
   }
   return null;
 }
 
-async function saveToDrive(){
+function showDocLink(fileId){
+  const a=document.getElementById('btn-drive-open');
+  if(!a || !fileId) return;
+  a.href='https://docs.google.com/document/d/'+fileId+'/edit';
+  a.style.display='inline-block';
+}
+
+async function saveToGoogleDoc(){
   try{
-    setDriveStatus('กำลังบันทึกขึ้น Drive...');
+    setDriveStatus('กำลังบันทึกลง Google Doc...');
     const token=await ensureToken();
-    const payload=JSON.stringify({
-      version:1,
-      savedAt:new Date().toISOString(),
-      log: log.map(r=>({...r, date:r.date.toISOString()})),
-      settings: collectSettings(),
-    }, null, 2);
-    let fileId=await driveFindFileId(token);
+    const html=buildLogHtml();
+    let fileId=await driveFindDocId(token);
     if(fileId){
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+fileId+'?uploadType=media', {
         method:'PATCH',
-        headers:{Authorization:'Bearer '+token, 'Content-Type':'application/json'},
-        body: payload
+        headers:{Authorization:'Bearer '+token, 'Content-Type':'text/html; charset=UTF-8'},
+        body: html
       });
-      if(!res.ok) throw new Error('อัปเดตไฟล์ไม่สำเร็จ (HTTP '+res.status+')');
+      if(!res.ok){
+        // เอกสารอาจถูกลบไปแล้วที่ฝั่ง Drive — ล้าง id ที่จำไว้แล้วลองสร้างใหม่
+        localStorage.removeItem('ev_gdoc_file_id');
+        throw new Error('อัปเดตเอกสารไม่สำเร็จ (HTTP '+res.status+') ลองกดบันทึกอีกครั้งเพื่อสร้างเอกสารใหม่');
+      }
     } else {
       const boundary='evcalcboundary';
-      const metadata={name:DRIVE_FILE_NAME, mimeType:'application/json'};
+      const metadata={name:GDOC_FILE_NAME, mimeType:'application/vnd.google-apps.document'};
       const body=
         '--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n'+
-        '--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+payload+'\r\n'+
+        '--'+boundary+'\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n'+html+'\r\n'+
         '--'+boundary+'--';
       const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method:'POST',
         headers:{Authorization:'Bearer '+token, 'Content-Type':'multipart/related; boundary='+boundary},
         body
       });
-      if(!res.ok) throw new Error('สร้างไฟล์ไม่สำเร็จ (HTTP '+res.status+')');
+      if(!res.ok) throw new Error('สร้างเอกสารไม่สำเร็จ (HTTP '+res.status+')');
       const data=await res.json();
-      if(data.id) localStorage.setItem('ev_gdrive_file_id', data.id);
+      if(data.id){ fileId=data.id; localStorage.setItem('ev_gdoc_file_id', data.id); }
     }
-    setDriveStatus('บันทึกขึ้น Drive สำเร็จ ✓ ('+new Date().toLocaleTimeString('th-TH')+')');
+    showDocLink(fileId);
+    setDriveStatus('บันทึกลง Google Doc สำเร็จ ✓ ('+new Date().toLocaleTimeString('th-TH')+')');
   }catch(e){
     setDriveStatus('บันทึกไม่สำเร็จ: '+e.message);
-  }
-}
-
-async function loadFromDrive(){
-  try{
-    setDriveStatus('กำลังโหลดจาก Drive...');
-    const token=await ensureToken();
-    const fileId=await driveFindFileId(token);
-    if(!fileId){ setDriveStatus('ยังไม่มีข้อมูลสำรองใน Drive (ลองกด "บันทึกขึ้น Drive" ก่อน)'); return; }
-    const res=await fetch('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media', {
-      headers:{Authorization:'Bearer '+token}
-    });
-    if(!res.ok) throw new Error('โหลดไฟล์ไม่สำเร็จ (HTTP '+res.status+')');
-    const data=await res.json();
-    const n=(data.log||[]).length;
-    const savedAt=data.savedAt ? new Date(data.savedAt).toLocaleString('th-TH') : '-';
-    if(!confirm('พบข้อมูลสำรอง '+n+' รายการ (บันทึกล่าสุด '+savedAt+')\nต้องการแทนที่ข้อมูลในเครื่องนี้หรือไม่?')) { setDriveStatus('ยกเลิกการโหลด'); return; }
-    log=(data.log||[]).map(r=>({...r, date:new Date(r.date)}));
-    saveLogLocal();
-    if(data.settings) applySettings(data.settings);
-    renderLog();
-    setDriveStatus('โหลดจาก Drive สำเร็จ ✓');
-  }catch(e){
-    setDriveStatus('โหลดไม่สำเร็จ: '+e.message);
   }
 }
 
@@ -797,13 +820,13 @@ let autoSyncTimer=null;
 function maybeAutoSync(){
   if(localStorage.getItem('ev_gautosync')==='1' && gTokenClient){
     clearTimeout(autoSyncTimer);
-    autoSyncTimer=setTimeout(()=>{ saveToDrive(); }, 1500);
+    autoSyncTimer=setTimeout(()=>{ saveToGoogleDoc(); }, 1500);
   }
 }
 function toggleAutoSync(){
   const on=document.getElementById('in-gautosync').checked;
   if(on && !gTokenClient){
-    alert('กรุณาเชื่อมต่อ Google Drive ก่อนเปิดใช้การซิงค์อัตโนมัติ');
+    alert('กรุณาเชื่อมต่อ Google Drive ก่อนเปิดใช้การอัปเดตอัตโนมัติ');
     document.getElementById('in-gautosync').checked=false;
     return;
   }
@@ -817,6 +840,8 @@ function toggleAutoSync(){
   if(savedClient){ const el=document.getElementById('in-gclient'); if(el) el.value=savedClient; }
   const autosyncEl=document.getElementById('in-gautosync');
   if(autosyncEl) autosyncEl.checked = localStorage.getItem('ev_gautosync')==='1';
+  const savedDocId=localStorage.getItem('ev_gdoc_file_id');
+  if(savedDocId) showDocLink(savedDocId);
   renderLog();
 })();
 
